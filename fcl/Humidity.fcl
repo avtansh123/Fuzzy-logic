@@ -1,0 +1,52 @@
+FUNCTION_BLOCK humi_FB
+
+VAR_INPUT
+	minhum : REAL;
+	averagehum : REAL;
+	maxhum : REAL;
+END_VAR
+
+VAR_OUTPUT
+	humidity : REAL;
+END_VAR
+
+FUZZIFY minhum
+	TERM verylow := trian -10 1 13
+	TERM low := trian 1 13 30;
+	TERM littlelow := trian 13 29 54;
+END_FUZZIFY
+
+FUZZIFY averagehum
+	TERM lessnormal := trian 13 30 55;
+	TERM normal:= trian 33 55 75;
+	TERM beyondnormal := trian 56 77 100;
+END_FUZZIFY
+
+FUZZIFY maxhum
+	TERM lesshigh := trian 55 75 100;
+	TERM high:= trian 76 96	115;
+	TERM veryhigh := trian 97 116 132;
+END_FUZZIFY
+
+DEFUZZIFY humidity
+	TERM low := trian -10 13 54;
+	TERM normal := trian 13 55 100;
+	TERM high := trian 55 96 132;
+	METHOD : COG;
+	DEFAULT := 0;
+END_DEFUZZIFY
+
+RULEBLOCK No1
+	AND : MIN;
+	ACCU : MAX;
+	RULE 1 : IF minhum is littlelow and averagehum is beyondnormal and maxhum is veryhigh then humidity is normal;
+	RULE 2 : IF minhum is low and averagehum is normal and maxhum is high then humidity is normal;
+	RULE 3 : IF minhum is littlelow and averagehum is beyondnormal and maxhum is high then humidity is high;
+	RULE 4 : IF minhum is littlelow and averagehum is normal and maxhum is high then humidity is normal;
+	RULE 5: IF minhum is low and averagehum is normal and maxhum is lesshigh then humidity is low; 
+	RULE 6: IF minhum is verylow and averagehum is lessnormal and maxhum is lesshigh then humidity is low;
+
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK
+

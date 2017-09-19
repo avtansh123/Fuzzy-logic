@@ -1,0 +1,52 @@
+FUNCTION_BLOCK Temp_FB
+
+VAR_INPUT
+	mintemp : REAL;
+	averagetemp : REAL;
+	maxtemp : REAL;
+END_VAR
+
+VAR_OUTPUT
+	temperature : REAL;
+END_VAR
+
+FUZZIFY mintemp
+	TERM verycold := trian 1 5 9;
+	TERM cold := trian 5 13 15;
+	TERM littlecold := trian 10 16 22;
+END_FUZZIFY
+
+FUZZIFY averagetemp
+	TERM lessnormal := trian 8 11 19;
+	TERM normal:= trian 11 19 25;
+	TERM beyondnormal := trian 19 25 28;
+END_FUZZIFY
+
+FUZZIFY maxtemp
+	TERM lesshot := trian 20 25 30;
+	TERM hot:= trian 25 31 36;
+	TERM veryhot := trian 33 36 40;
+END_FUZZIFY
+
+DEFUZZIFY temperature
+	TERM freezing := trian 1 15 22;
+	TERM cozy := trian 15 25 28;
+	TERM warm := trian 25 36 40;
+	METHOD : COG;
+	DEFAULT := 0;
+END_DEFUZZIFY
+
+RULEBLOCK No1
+	AND : MIN;
+	ACCU : MAX;
+	RULE 1 : IF mintemp is littlecold and averagetemp is beyondnormal and maxtemp is veryhot then temperature is cozy;
+	RULE 2 : IF mintemp is cold and averagetemp is normal and maxtemp is hot then temperature is cozy;
+	RULE 3 : IF mintemp is littlecold and averagetemp is beyondnormal and maxtemp is hot then temperature is warm;
+	RULE 4 : IF mintemp is littlecold and averagetemp is normal and maxtemp is hot then temperature is cozy;
+	RULE 5: IF mintemp is cold and averagetemp is normal and maxtemp is lesshot then temperature is freezing; 
+	RULE 6: IF mintemp is verycold and averagetemp is lessnormal and maxtemp is lesshot then temperature is freezing;
+
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK
+

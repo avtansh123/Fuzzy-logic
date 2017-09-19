@@ -1,0 +1,52 @@
+FUNCTION_BLOCK Press_FB
+
+VAR_INPUT
+	minpress : REAL;
+	averagepress : REAL;
+	maxpress : REAL;
+END_VAR
+
+VAR_OUTPUT
+	pressure : REAL;
+END_VAR
+
+FUZZIFY minpress
+	TERM verylow := trian 950 963 975
+	TERM low := trian 962 973 983;
+	TERM littlelow := trian 972 983 993;
+END_FUZZIFY
+
+FUZZIFY averagepress
+	TERM lessnormal := trian 970 980 990;
+	TERM normal:= trian 980 992 1005;
+	TERM beyondnormal := trian 994 1008	1020;
+END_FUZZIFY
+
+FUZZIFY maxpress
+	TERM lesshigh := trian 993 1006 1019;
+	TERM high:= trian 1007 1020 1031;
+	TERM veryhigh := trian 1022 1032 1041;
+END_FUZZIFY
+
+DEFUZZIFY pressure
+	TERM low := trian 950 973 993;
+	TERM normal := trian 970 992 1020;
+	TERM high := trian 993 1020 1041;
+	METHOD : COG;
+	DEFAULT := 0;
+END_DEFUZZIFY
+
+RULEBLOCK No1
+	AND : MIN;
+	ACCU : MAX;
+	RULE 1 : IF minpress is littlelow and averagepress is beyondnormal and maxpress is veryhigh then pressure is normal;
+	RULE 2 : IF minpress is low and averagepress is normal and maxpress is high then pressure is normal;
+	RULE 3 : IF minpress is littlelow and averagepress is beyondnormal and maxpress is high then pressure is high;
+	RULE 4 : IF minpress is littlelow and averagepress is normal and maxpress is high then pressure is normal;
+	RULE 5: IF minpress is low and averagepress is normal and maxpress is lesshigh then pressure is low; 
+	RULE 6: IF minpress is verylow and averagepress is lessnormal and maxpress is lesshigh then pressure is low;
+
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK
+
